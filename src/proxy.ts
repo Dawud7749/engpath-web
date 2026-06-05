@@ -32,16 +32,50 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/profile') ||
     pathname.startsWith('/weekly');
 
-  if (!user && isAppRoute) {
+  const isOnboarding = pathname.startsWith('/onboarding');
+
+  // Not logged in + accessing app/onboarding → /login
+  if (!user && (isAppRoute || isOnboarding)) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
+  // Logged in + on /login → /dashboard
   if (user && pathname === '/login') {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
+  }
+
+  // Logged in + accessing app routes → check if onboarded
+  if (user && isAppRoute) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarded')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.onboarded) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/onboarding/welcome';
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Already onboarded + accessing /onboarding → /dashboard
+  if (user && isOnboarding) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarded')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.onboarded) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

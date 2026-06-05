@@ -6,10 +6,10 @@ import { Bar } from '@/components/ui/Bar';
 import { SparkleIcon, MicIcon, BookIcon, PenIcon, ChevRIcon } from '@/components/ui/Icons';
 
 const modules = [
-  { icon: SparkleIcon, title: 'Vocabulary', sub: '218 kata · 10 baru hari ini', pct: 72, color: 'var(--sky)', deep: 'var(--sky-deep)', href: '/learn/vocab' },
-  { icon: MicIcon,     title: 'Speaking',   sub: 'Describe your ideal workplace', pct: 64, color: 'var(--pink)', deep: 'var(--pink-deep)', href: '/learn/session', badge: 'REKAM' },
-  { icon: BookIcon,    title: 'Reading',    sub: 'Remote Work · teks B1', pct: 58, color: 'var(--mint)', deep: '#3FB7A2', href: '/learn/session' },
-  { icon: PenIcon,     title: 'Grammar',    sub: 'Past tense · error correction', pct: 48, color: 'var(--sunny)', deep: '#F2B43C', href: '/learn/session' },
+  { icon: PenIcon,     title: 'Grammar',    sub: 'Pelajari aturan + latihan',     pct: 0, color: 'var(--sunny)', deep: '#F2B43C', href: '/learn/grammar', badge: 'MATERI' },
+  { icon: BookIcon,    title: 'Reading',    sub: 'Baca + pahami artikel',         pct: 0, color: 'var(--mint)', deep: '#3FB7A2', href: '/learn/reading', badge: 'MATERI' },
+  { icon: SparkleIcon, title: 'Vocabulary', sub: 'Flashcard kata baru',           pct: 0, color: 'var(--sky)', deep: 'var(--sky-deep)', href: '/learn/vocab' },
+  { icon: MicIcon,     title: 'Speaking',   sub: 'Coming soon — rekam pengucapan', pct: 0, color: 'var(--pink)', deep: 'var(--pink-deep)', href: '/learn', badge: 'SOON' },
 ];
 
 export default function LearnPage() {
