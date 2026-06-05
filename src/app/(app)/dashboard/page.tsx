@@ -1,17 +1,17 @@
-'use client';
 import Link from 'next/link';
-import { Avatar, ME, PARTNER } from '@/components/ui/Avatar';
-import { StreakBadge, PhaseChip, ShieldBadge } from '@/components/ui/Badge';
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import { Avatar, ME } from '@/components/ui/Avatar';
+import { PhaseChip, ShieldBadge } from '@/components/ui/Badge';
 import { Card, SectionLabel } from '@/components/ui/Card';
-import { Btn } from '@/components/ui/Btn';
 import { VersusBar } from '@/components/ui/Bar';
 import { BoltIcon, SwordsIcon, SparkleIcon, TargetIcon, BookIcon, PenIcon, BellIcon, CheckIcon, ChevRIcon, ArrowUpIcon, CrownIcon, FireIcon } from '@/components/ui/Icons';
 
 const tasks = [
-  { icon: <SparkleIcon size={20} />, title: 'Warm-up · Vocab', meta: '5 kata lama + 5 baru', done: true, color: 'var(--sky)', href: '/learn/vocab' },
+  { icon: <SparkleIcon size={20} />, title: 'Warm-up · Vocab', meta: '5 kata lama + 5 baru', done: false, color: 'var(--sky)', href: '/learn/vocab' },
   { icon: <BookIcon size={20} />, title: 'Core · Reading', meta: '1 teks B1 · 10 menit', done: false, active: true, color: 'var(--sky)', href: '/learn/session' },
   { icon: <PenIcon size={20} />, title: 'Grammar in Context', meta: 'Past tense · 8 soal', done: false, color: 'var(--mint)', href: '/learn/session' },
-  { icon: <SwordsIcon size={20} />, title: 'Daily Duel vs Jea', meta: 'Vocab challenge · 5 mnt', done: false, color: 'var(--pink)', href: '/duel' },
+  { icon: <SwordsIcon size={20} />, title: 'Daily Duel', meta: 'Vocab challenge · 5 mnt', done: false, color: 'var(--pink)', href: '/duel' },
 ];
 
 function StatCard({ icon, label, value, sub, color, deep, soft }: { icon: React.ReactNode; label: string; value: string; sub?: React.ReactNode; color: string; deep: string; soft: string }) {
@@ -45,42 +45,82 @@ function TaskRow({ icon, title, meta, done, active, color, href }: typeof tasks[
   );
 }
 
-export default function DashboardPage() {
+function PlayIcon({ size = 20, style }: { size?: number; style?: React.CSSProperties }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" style={style}><path d="M5 3l14 9-14 9V3z" /></svg>;
+}
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('display_name, current_phase, current_week, streak_count, total_xp, duel_wins, active_vocab, current_level, partner_id')
+    .eq('id', user.id)
+    .single();
+
+  const displayName = profile?.display_name || user.email?.split('@')[0] || 'User';
+  const initials = displayName.charAt(0).toUpperCase();
+  const phase = profile?.current_phase ?? 1;
+  const week = profile?.current_week ?? 1;
+  const streak = profile?.streak_count ?? 0;
+  const totalXp = profile?.total_xp ?? 0;
+  const duelWins = profile?.duel_wins ?? 0;
+  const activeVocab = profile?.active_vocab ?? 0;
+  const level = profile?.current_level || 'A2';
+  const hasPartner = !!profile?.partner_id;
+
+  // Partner profile
+  let partnerData = null;
+  if (hasPartner) {
+    const { data: p } = await supabase
+      .from('profiles')
+      .select('display_name, total_xp')
+      .eq('id', profile!.partner_id!)
+      .single();
+    partnerData = p;
+  }
+
   const doneCount = tasks.filter(t => t.done).length;
+
   return (
     <div style={{ background: 'var(--offwhite)', minHeight: '100%' }}>
       {/* Header */}
       <div style={{ background: 'linear-gradient(165deg, var(--baby) 0%, var(--sky-wash) 55%, var(--offwhite) 100%)', padding: '58px 18px 16px', borderRadius: '0 0 28px 28px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Avatar {...ME} size={48} ring glow />
+          <Avatar {...ME} initials={initials} size={48} ring glow />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, color: 'var(--ink-2)', fontWeight: 700 }}>Halo,</div>
-            <div className="f-display" style={{ fontSize: 21, fontWeight: 700, lineHeight: 1.05, color: 'var(--ink)' }}>Dawud</div>
+            <div className="f-display" style={{ fontSize: 21, fontWeight: 700, lineHeight: 1.05, color: 'var(--ink)' }}>{displayName}</div>
           </div>
-          <PhaseChip phase={1} week={3} />
+          <PhaseChip phase={phase} week={week} />
           <div style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', background: '#fff', boxShadow: 'var(--sh-xs)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-2)' }}>
             <BellIcon size={20} />
-            <span style={{ position: 'absolute', top: 9, right: 10, width: 8, height: 8, borderRadius: '50%', background: 'var(--coral)', border: '2px solid #fff' }} />
           </div>
         </div>
 
         {/* Streak hero */}
-        <div style={{ marginTop: 16, borderRadius: 'var(--r-xl)', padding: 16, position: 'relative', overflow: 'hidden', background: 'linear-gradient(125deg, var(--sunny), var(--coral) 88%)', boxShadow: '0 14px 30px rgba(255,158,125,0.42)' }}>
+        <div style={{ marginTop: 16, borderRadius: 'var(--r-xl)', padding: 16, position: 'relative', overflow: 'hidden', background: streak > 0 ? 'linear-gradient(125deg, var(--sunny), var(--coral) 88%)' : 'linear-gradient(125deg, var(--faint), var(--muted))', boxShadow: streak > 0 ? '0 14px 30px rgba(255,158,125,0.42)' : 'var(--sh-md)' }}>
           <div style={{ position: 'absolute', right: -10, top: -18, opacity: 0.25, color: '#fff' }}>
             <FireIcon size={120} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, color: '#fff' }}>
-              <FireIcon size={42} style={{ animation: 'flame 1.3s ease-in-out infinite', transformOrigin: 'bottom center' }} />
-              <span className="f-display tabular" style={{ fontSize: 52, fontWeight: 700, lineHeight: 0.9 }}>14</span>
+              <FireIcon size={42} style={{ animation: streak > 0 ? 'flame 1.3s ease-in-out infinite' : 'none', transformOrigin: 'bottom center' }} />
+              <span className="f-display tabular" style={{ fontSize: 52, fontWeight: 700, lineHeight: 0.9 }}>{streak}</span>
             </div>
             <div style={{ color: '#fff' }}>
               <div className="f-display" style={{ fontSize: 18, fontWeight: 600, lineHeight: 1 }}>hari streak</div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, opacity: 0.92, marginTop: 3 }}>Jaga terus bareng Jea</div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, opacity: 0.92, marginTop: 3 }}>
+                {streak === 0 ? 'Mulai sesi pertamamu!' : hasPartner ? `Jaga terus bareng ${partnerData?.display_name || 'partner'}` : 'Undang partner untuk mulai'}
+              </div>
             </div>
-            <div style={{ marginLeft: 'auto' }}>
-              <ShieldBadge />
-            </div>
+            {streak > 0 && (
+              <div style={{ marginLeft: 'auto' }}>
+                <ShieldBadge />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -89,10 +129,10 @@ export default function DashboardPage() {
       <div style={{ padding: '4px 18px 24px' }}>
         {/* 4 stat cards */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 11, marginTop: 14 }}>
-          <StatCard icon={<BoltIcon size={20} />} label="Total XP" value="2.480" sub={<><ArrowUpIcon size={11} />+45 hari ini</>} color="var(--sky)" deep="var(--sky-deep)" soft="var(--sky-wash)" />
-          <StatCard icon={<SwordsIcon size={20} />} label="Duel menang" value="23" sub={<>dari 31 duel</>} color="var(--pink)" deep="var(--pink-deep)" soft="var(--pink-wash)" />
-          <StatCard icon={<SparkleIcon size={20} />} label="Vocab aktif" value="218" sub={<><ArrowUpIcon size={11} />+10 hari ini</>} color="var(--mint)" deep="#3FB7A2" soft="var(--mint-soft)" />
-          <StatCard icon={<TargetIcon size={20} />} label="Level skill" value="B1+" sub={<>menuju B2</>} color="var(--sunny)" deep="#F2B43C" soft="var(--sunny-soft)" />
+          <StatCard icon={<BoltIcon size={20} />} label="Total XP" value={totalXp.toLocaleString('id-ID')} sub={totalXp > 0 ? <><ArrowUpIcon size={11} />terus tingkatkan</> : <>mulai sesi!</>} color="var(--sky)" deep="var(--sky-deep)" soft="var(--sky-wash)" />
+          <StatCard icon={<SwordsIcon size={20} />} label="Duel menang" value={String(duelWins)} sub={duelWins > 0 ? <>terus tantang!</> : <>belum ada duel</>} color="var(--pink)" deep="var(--pink-deep)" soft="var(--pink-wash)" />
+          <StatCard icon={<SparkleIcon size={20} />} label="Vocab aktif" value={String(activeVocab)} sub={activeVocab > 0 ? <><ArrowUpIcon size={11} />keep going</> : <>belajar kata baru</>} color="var(--mint)" deep="#3FB7A2" soft="var(--mint-soft)" />
+          <StatCard icon={<TargetIcon size={20} />} label="Level skill" value={level} sub={<>fase {phase}</>} color="var(--sunny)" deep="#F2B43C" soft="var(--sunny-soft)" />
         </div>
 
         {/* Today's session */}
@@ -113,23 +153,31 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Head to head */}
-        <div style={{ marginTop: 20 }}>
-          <SectionLabel action={<span style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)' }}>Juni 2026</span>}>Head-to-head bulan ini</SectionLabel>
-          <Link href="/progress" style={{ textDecoration: 'none' }}>
-            <Card pad={16}>
-              <VersusBar a={58} b={64} nameA="Dawud" nameB="Jea" />
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 12, fontSize: 12.5, fontWeight: 700, color: 'var(--sky-ink)' }}>
-                <CrownIcon size={15} style={{ color: 'var(--sunny)' }} /> Jea unggul 6 poin — kejar di duel hari ini!
-              </div>
+        {/* Head to head — only show if partner exists */}
+        {hasPartner && partnerData && (
+          <div style={{ marginTop: 20 }}>
+            <SectionLabel>Head-to-head</SectionLabel>
+            <Link href="/progress" style={{ textDecoration: 'none' }}>
+              <Card pad={16}>
+                <VersusBar a={totalXp} b={partnerData.total_xp || 0} nameA={displayName} nameB={partnerData.display_name || 'Partner'} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 12, fontSize: 12.5, fontWeight: 700, color: 'var(--sky-ink)' }}>
+                  <CrownIcon size={15} style={{ color: 'var(--sunny)' }} />
+                  {totalXp > (partnerData.total_xp || 0) ? 'Kamu unggul!' : totalXp === (partnerData.total_xp || 0) ? 'Imbang' : 'Kejar ketinggalan!'}
+                </div>
+              </Card>
+            </Link>
+          </div>
+        )}
+
+        {!hasPartner && (
+          <div style={{ marginTop: 20 }}>
+            <Card pad={16} style={{ textAlign: 'center', background: 'var(--pink-wash)', border: '1.5px solid var(--lpink)' }}>
+              <div className="f-display" style={{ fontSize: 16, fontWeight: 600, color: 'var(--pink-ink)' }}>Belum punya partner</div>
+              <div style={{ fontSize: 13, color: 'var(--ink-2)', fontWeight: 600, marginTop: 4 }}>Undang teman untuk mulai kompetisi!</div>
             </Card>
-          </Link>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
-
-function PlayIcon({ size = 20, style }: { size?: number; style?: React.CSSProperties }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" style={style}><path d="M5 3l14 9-14 9V3z" /></svg>;
 }
