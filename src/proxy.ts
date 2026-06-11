@@ -41,8 +41,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Logged in + on /login → /dashboard
-  if (user && pathname === '/login') {
+  // Logged in + on /login, /register, /forgot-password → /dashboard
+  if (user && (pathname === '/login' || pathname === '/register' || pathname === '/forgot-password')) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);

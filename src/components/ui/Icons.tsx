@@ -45,3 +45,5 @@ export const HeadphoneIcon   = ic('M3 18v-6a9 9 0 0118 0v6 M21 19a2 2 0 01-2 2h-
 export const CheckCircleIcon = ic('M22 11.08V12a10 10 0 11-5.93-9.14 M22 4L12 14.01l-3-3');
 export const XCircleIcon     = ic('M12 22a10 10 0 100-20 10 10 0 000 20z M15 9l-6 6 M9 9l6 6');
 export const ArrowUpIcon     = ic('M12 19V5 M5 12l7-7 7 7');
+export const ArrowRightIcon  = ic('M5 12h14 M13 5l7 7-7 7');
+export const LogoutIcon      = ic('M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4 M16 17l5-5-5-5 M21 12H9');
