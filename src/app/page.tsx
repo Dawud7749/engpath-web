@@ -6,7 +6,7 @@ import {
 
 export default function LandingPage() {
   return (
-    <main style={{ minHeight: '100vh', background: 'linear-gradient(165deg, var(--sky-wash) 0%, var(--offwhite) 50%, var(--pink-wash) 100%)', fontFamily: 'var(--font-body)' }}>
+    <main style={{ height: '100%', width: '100%', overflowY: 'auto', overflowX: 'hidden', background: 'linear-gradient(165deg, var(--sky-wash) 0%, var(--offwhite) 50%, var(--pink-wash) 100%)', fontFamily: 'var(--font-body)' }}>
       {/* Top bar */}
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 28px', maxWidth: 1180, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
