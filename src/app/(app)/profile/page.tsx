@@ -1,63 +1,77 @@
-'use client';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Avatar, ME, PARTNER } from '@/components/ui/Avatar';
+import { createClient } from '@/lib/supabase/server';
 import { LevelBadge, PhaseChip } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { CalIcon, TrophyIcon, ShieldCheckIcon, BellIcon, SettingsIcon, ChevRIcon, FireIcon, MicIcon, BookIcon, BoltIcon } from '@/components/ui/Icons';
-import { createClient } from '@/lib/supabase/client';
+import { PartnerInvite } from './PartnerInvite';
+import { LogoutButton } from './LogoutButton';
 
 const badges = [
-  { icon: FireIcon,  label: '14 hari',  color: 'var(--coral)' },
-  { icon: MicIcon,   label: 'Speaker',  color: 'var(--pink)' },
+  { icon: FireIcon,  label: '14 hari',   color: 'var(--coral)' },
+  { icon: MicIcon,   label: 'Speaker',   color: 'var(--pink)' },
   { icon: BookIcon,  label: 'Reader B1', color: 'var(--sky)' },
-  { icon: BoltIcon,  label: '2.5K XP',  color: 'var(--sunny)' },
+  { icon: BoltIcon,  label: '2.5K XP',   color: 'var(--sunny)' },
 ];
 
 const menu = [
-  { icon: CalIcon,          label: 'Laporan Mingguan', detail: 'Minggu 3', color: 'var(--sky)', href: '/weekly' },
-  { icon: TrophyIcon,       label: 'Leaderboard',      detail: '5 domain', color: 'var(--sunny)', href: '/leaderboard' },
-  { icon: ShieldCheckIcon,  label: 'Streak Shield',    detail: '1 tersisa', color: 'var(--mint)', href: null },
-  { icon: BellIcon,         label: 'Reminder harian',  detail: '19:00',    color: 'var(--coral)', href: null },
+  { icon: CalIcon,         label: 'Laporan Mingguan', detail: 'Minggu 3', color: 'var(--sky)',  href: '/weekly' },
+  { icon: TrophyIcon,      label: 'Leaderboard',      detail: '5 domain', color: 'var(--sunny)', href: '/leaderboard' },
+  { icon: ShieldCheckIcon, label: 'Streak Shield',    detail: '1 tersisa', color: 'var(--mint)',  href: null },
+  { icon: BellIcon,        label: 'Reminder harian',  detail: '19:00',    color: 'var(--coral)', href: null },
 ];
 
-export default function ProfilePage() {
-  const router = useRouter();
+export default async function ProfilePage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('display_name, current_phase, current_week, current_level, focus_skill, partner_id')
+    .eq('id', user.id)
+    .single();
+
+  const displayName = profile?.display_name || user.email?.split('@')[0] || 'User';
+  const initials    = displayName.charAt(0).toUpperCase();
+  const level       = profile?.current_level || 'A2';
+  const phase       = profile?.current_phase ?? 1;
+  const week        = profile?.current_week ?? 1;
+  const focus       = profile?.focus_skill ? profile.focus_skill.charAt(0).toUpperCase() + profile.focus_skill.slice(1) : null;
+
+  let partnerData: { display_name: string | null; email: string | null } | null = null;
+  if (profile?.partner_id) {
+    const { data: p } = await supabase
+      .from('profiles')
+      .select('display_name, email')
+      .eq('id', profile.partner_id)
+      .single();
+    partnerData = p;
+  }
 
   return (
     <div style={{ background: 'var(--offwhite)', minHeight: '100%' }}>
       <div style={{ background: 'linear-gradient(165deg, var(--lpink) 0%, var(--pink-wash) 50%, var(--offwhite) 100%)', padding: '58px 18px 18px', borderRadius: '0 0 28px 28px', textAlign: 'center' }}>
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          <Avatar {...ME} size={84} ring glow />
+          <div style={{ width: 84, height: 84, borderRadius: '50%', background: 'linear-gradient(150deg, var(--pink), var(--pink-deep))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: 36, fontWeight: 700, border: '3px solid #fff', boxShadow: '0 8px 22px rgba(245,168,200,0.55)' }}>
+            {initials}
+          </div>
           <div style={{ position: 'absolute', bottom: -2, right: -4, background: '#fff', borderRadius: 999, padding: 2, boxShadow: 'var(--sh-xs)' }}>
-            <LevelBadge level="B1+" size="sm" />
+            <LevelBadge level={level} size="sm" />
           </div>
         </div>
-        <div className="f-display" style={{ fontSize: 22, fontWeight: 700, marginTop: 10, color: 'var(--ink)' }}>Dawud</div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 6 }}>
-          <PhaseChip phase={1} week={3} />
-          <span style={{ display: 'inline-flex', alignItems: 'center', height: 26, padding: '0 12px', borderRadius: 999, background: '#fff', fontSize: 12.5, fontWeight: 800, color: 'var(--muted)', boxShadow: 'var(--sh-xs)' }}>Fokus: Speaking</span>
+        <div className="f-display" style={{ fontSize: 22, fontWeight: 700, marginTop: 10, color: 'var(--ink)' }}>{displayName}</div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+          <PhaseChip phase={phase} week={week} />
+          {focus && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', height: 26, padding: '0 12px', borderRadius: 999, background: '#fff', fontSize: 12.5, fontWeight: 800, color: 'var(--muted)', boxShadow: 'var(--sh-xs)' }}>Fokus: {focus}</span>
+          )}
         </div>
       </div>
 
-      <div style={{ padding: '16px 18px 24px' }}>
+      <div style={{ padding: '16px 18px 24px', maxWidth: 720, margin: '0 auto' }}>
         {/* Partner */}
-        <Card pad={14} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Avatar {...PARTNER} size={44} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.3 }}>Partner belajar</div>
-            <div className="f-display" style={{ fontSize: 16, fontWeight: 600, color: 'var(--sky-ink)' }}>Jea</div>
-          </div>
-          <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--green)' }} />online
-          </span>
-        </Card>
+        <PartnerInvite partner={partnerData} myEmail={user.email || ''} />
 
         {/* Badges */}
         <div style={{ marginTop: 18 }}>
@@ -97,17 +111,14 @@ export default function ProfilePage() {
               )}
             </div>
           ))}
-          <button style={{ display: 'flex', alignItems: 'center', gap: 13, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '13px 4px', cursor: 'pointer' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 4px' }}>
             <div style={{ width: 34, height: 34, borderRadius: 'var(--r-sm)', background: 'var(--offwhite)', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><SettingsIcon size={19} /></div>
             <span style={{ flex: 1, fontSize: 14.5, fontWeight: 700, color: 'var(--ink)' }}>Pengaturan</span>
             <ChevRIcon size={17} style={{ color: 'var(--faint)' }} />
-          </button>
+          </div>
         </Card>
 
-        {/* Logout */}
-        <button onClick={handleLogout} style={{ width: '100%', marginTop: 16, padding: '14px 0', borderRadius: 'var(--r-pill)', border: '1.5px solid var(--red-soft)', background: 'var(--red-soft)', color: 'var(--red)', fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 600, cursor: 'pointer' }}>
-          Keluar
-        </button>
+        <LogoutButton />
       </div>
     </div>
   );
