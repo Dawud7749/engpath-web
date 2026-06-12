@@ -31,7 +31,11 @@ export async function saveOnboardingStep(formData: FormData) {
     updates.onboarded = true;
   }
 
-  await supabase.from('profiles').update(updates).eq('id', user.id);
+  const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
+  if (error) {
+    console.error('[onboarding] update failed', { step, error });
+    throw new Error(`Gagal simpan progress: ${error.message}`);
+  }
 
   redirect(next);
 }
