@@ -1,4 +1,5 @@
 import { OnboardingShell } from '@/components/ui/OnboardingShell';
+import { OnboardingSubmit } from '@/components/ui/OnboardingSubmit';
 import { saveOnboardingStep } from '../actions';
 
 const goals = [
@@ -31,9 +32,7 @@ export default function GoalPage() {
         </div>
 
         <div style={{ marginTop: 'auto', paddingTop: 24 }}>
-          <button type="submit" className="f-display" style={{ width: '100%', height: 56, borderRadius: 'var(--r-pill)', border: 'none', background: 'linear-gradient(135deg, var(--sky), var(--sky-deep))', color: '#fff', fontSize: 17, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--sh-blue)' }}>
-            Lanjut →
-          </button>
+          <OnboardingSubmit />
         </div>
       </form>
     </OnboardingShell>

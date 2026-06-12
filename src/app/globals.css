@@ -160,6 +160,13 @@ body {
   color: #fff;
 }
 
+/* ---- Submit button press animation ---- */
+.onboard-submit:active:not(:disabled) { transform: scale(0.97) !important; }
+@keyframes onboard-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
 }
