@@ -18,13 +18,14 @@ export default function GoalPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {goals.map((g, i) => (
-            <label key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: '#fff', borderRadius: 'var(--r-md)', border: '2px solid rgba(26,43,60,0.08)', cursor: 'pointer', position: 'relative' }}>
+            <label key={g.id} className="onboard-opt" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: '#fff', borderRadius: 'var(--r-md)', border: '2px solid rgba(26,43,60,0.08)', cursor: 'pointer', position: 'relative' }}>
               <input type="radio" name="goal" value={g.id} required defaultChecked={i === 0} style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }} />
               <span style={{ fontSize: 30 }}>{g.emoji}</span>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, paddingRight: 32 }}>
                 <div className="f-display" style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>{g.label}</div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)' }}>{g.desc}</div>
               </div>
+              <span className="onboard-opt-check">✓</span>
             </label>
           ))}
         </div>

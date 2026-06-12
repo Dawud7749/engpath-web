@@ -17,13 +17,14 @@ export default function LevelPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {levels.map((lv, i) => (
-            <label key={lv.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: '#fff', borderRadius: 'var(--r-md)', border: '2px solid rgba(26,43,60,0.08)', cursor: 'pointer', position: 'relative' }}>
+            <label key={lv.id} className="onboard-opt" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px 14px 16px', background: '#fff', borderRadius: 'var(--r-md)', border: '2px solid rgba(26,43,60,0.08)', cursor: 'pointer', position: 'relative' }}>
               <input type="radio" name="level" value={lv.id} required defaultChecked={i === 1} style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }} />
               <span style={{ fontSize: 32 }}>{lv.emoji}</span>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, paddingRight: 32 }}>
                 <div className="f-display" style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>{lv.label} <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--sky-ink)', background: 'var(--sky-wash)', padding: '2px 8px', borderRadius: 6, marginLeft: 6 }}>{lv.id.toUpperCase()}</span></div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginTop: 2 }}>{lv.desc}</div>
               </div>
+              <span className="onboard-opt-check">✓</span>
             </label>
           ))}
         </div>

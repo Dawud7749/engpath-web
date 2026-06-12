@@ -9,22 +9,24 @@ export default function PartnerPage() {
         <input type="hidden" name="next" value="/dashboard" />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '18px 16px', background: 'linear-gradient(135deg, var(--sky-wash), #fff)', borderRadius: 'var(--r-md)', border: '2px solid var(--baby)', cursor: 'pointer', position: 'relative' }}>
+          <label className="onboard-opt" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '18px 16px', background: '#fff', borderRadius: 'var(--r-md)', border: '2px solid rgba(26,43,60,0.08)', cursor: 'pointer', position: 'relative' }}>
             <input type="radio" name="mode" value="solo" required defaultChecked style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }} />
             <span style={{ fontSize: 42 }}>🚀</span>
-            <div style={{ flex: 1 }}>
-              <div className="f-display" style={{ fontSize: 17, fontWeight: 700, color: 'var(--sky-ink)' }}>Sendiri dulu (Solo)</div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-2)', marginTop: 2 }}>Langsung mulai belajar. Bisa undang partner kapan saja.</div>
+            <div style={{ flex: 1, paddingRight: 32 }}>
+              <div className="f-display" style={{ fontSize: 17, fontWeight: 700, color: 'var(--ink)' }}>Sendiri dulu (Solo)</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginTop: 2 }}>Langsung mulai belajar. Bisa undang partner kapan saja.</div>
             </div>
+            <span className="onboard-opt-check">✓</span>
           </label>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '18px 16px', background: '#fff', borderRadius: 'var(--r-md)', border: '2px solid rgba(26,43,60,0.08)', cursor: 'pointer', position: 'relative' }}>
+          <label className="onboard-opt" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '18px 16px', background: '#fff', borderRadius: 'var(--r-md)', border: '2px solid rgba(26,43,60,0.08)', cursor: 'pointer', position: 'relative' }}>
             <input type="radio" name="mode" value="partner" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }} />
             <span style={{ fontSize: 42 }}>👥</span>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, paddingRight: 32 }}>
               <div className="f-display" style={{ fontSize: 17, fontWeight: 700, color: 'var(--ink)' }}>Bareng partner</div>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginTop: 2 }}>Saling duel & track progress. Akan diminta undang email partner setelah ini.</div>
             </div>
+            <span className="onboard-opt-check">✓</span>
           </label>
         </div>
 
